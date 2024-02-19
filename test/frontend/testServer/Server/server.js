@@ -1,3 +1,33 @@
-version https://git-lfs.github.com/spec/v1
-oid sha256:e2e2fb8553c373271267a05bc375ef86c77e9a1debbef0ca2fdf970b749113a3
-size 717
+const express = require("express");
+const http = require("http");
+const { Server } = require("socket.io");
+
+const app = express();
+const server = http.createServer(app);
+const io = new Server(server, {
+  cors: {
+    origin: "*",
+    methods: ["GET", "POST"],
+  },
+});
+
+io.on("connection", (socket) => {
+  console.log("a user connected");
+
+  socket.on("disconnect", () => {
+    console.log("user disconnected");
+  });
+
+  socket.on("message", (message) => {
+    socket.broadcast.emit("message", message);
+  });
+
+  socket.on("mode", (mode) => {
+    socket.broadcast.emit("mode", mode);
+  });
+});
+
+const PORT = process.env.PORT || 9000;
+server.listen(PORT, () => {
+  console.log(`Server is running on port ${PORT}`);
+});
